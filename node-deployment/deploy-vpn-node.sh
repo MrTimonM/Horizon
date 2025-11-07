@@ -328,21 +328,29 @@ echo ""
 # Setup Node.js API server
 echo -e "${BLUE}[10/10] Setting up API server and blockchain registration...${NC}"
 
-# Remove old Node.js if present and install latest LTS
+# Remove old Node.js completely
 if command -v node &> /dev/null; then
     CURRENT_VERSION=$(node --version)
-    echo -e "${YELLOW}Found Node.js $CURRENT_VERSION, upgrading to latest LTS...${NC}"
+    echo -e "${YELLOW}Found Node.js $CURRENT_VERSION, removing...${NC}"
     apt-get remove -y nodejs npm > /dev/null 2>&1 || true
+    apt-get purge -y nodejs npm > /dev/null 2>&1 || true
+    apt-get autoremove -y > /dev/null 2>&1 || true
+    rm -rf /usr/bin/node /usr/bin/npm /usr/lib/node_modules
 fi
 
+# Install Node.js 20.x LTS
 echo -e "${YELLOW}Installing Node.js 20.x LTS via NodeSource...${NC}"
 curl -fsSL https://deb.nodesource.com/setup_20.x | bash - > /dev/null 2>&1
-apt-get install -y nodejs > /dev/null 2>&1
+DEBIAN_FRONTEND=noninteractive apt-get install -y nodejs > /dev/null 2>&1
 
 echo -e "${GREEN}✓ Node.js $(node --version) installed${NC}"
 
+# Setup application directory
 mkdir -p /opt/horizn-node
 cd /opt/horizn-node
+
+# Remove old node_modules if exists
+rm -rf node_modules package-lock.json
 
 # Create package.json
 cat > package.json << EOF
