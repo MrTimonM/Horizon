@@ -3,6 +3,7 @@
 #########################################
 # HORIZN VPN Node Deployment Script
 # Network Without Borders
+# Version: 1.0.1 (Updated: Nov 8, 2025)
 #########################################
 
 set -e
