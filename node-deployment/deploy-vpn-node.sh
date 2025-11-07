@@ -329,6 +329,15 @@ echo ""
 # Setup Node.js API server
 echo -e "${BLUE}[10/10] Setting up API server and blockchain registration...${NC}"
 
+# Check if Node.js is installed
+if ! command -v node &> /dev/null; then
+    echo -e "${YELLOW}Installing Node.js via NodeSource...${NC}"
+    curl -fsSL https://deb.nodesource.com/setup_18.x | bash - > /dev/null 2>&1
+    apt-get install -y nodejs > /dev/null 2>&1
+fi
+
+echo -e "${GREEN}✓ Node.js $(node --version) installed${NC}"
+
 mkdir -p /opt/horizn-node
 cd /opt/horizn-node
 
@@ -349,7 +358,8 @@ cat > package.json << EOF
 EOF
 
 # Install npm packages
-npm install --silent > /dev/null 2>&1
+echo -e "${YELLOW}Installing Node.js packages (this may take a moment)...${NC}"
+npm install --silent 2>&1 | grep -v "^npm WARN" || true
 
 # Create .env file
 cat > .env << EOF
@@ -575,13 +585,22 @@ systemctl daemon-reload
 systemctl enable horizn-node > /dev/null 2>&1
 systemctl start horizn-node
 
-sleep 3
+sleep 5
 
 if systemctl is-active --quiet horizn-node; then
     echo -e "${GREEN}✓ API server started successfully${NC}"
 else
     echo -e "${RED}✗ Failed to start API server${NC}"
-    exit 1
+    echo -e "${YELLOW}Checking logs...${NC}"
+    journalctl -u horizn-node -n 20 --no-pager
+    echo ""
+    echo -e "${YELLOW}Troubleshooting:${NC}"
+    echo "  - Check logs: journalctl -u horizn-node -f"
+    echo "  - Check Node.js: node --version"
+    echo "  - Check npm packages: cd /opt/horizn-node && npm list"
+    echo "  - Restart service: systemctl restart horizn-node"
+    echo ""
+    echo -e "${YELLOW}Continuing deployment...${NC}"
 fi
 
 echo ""
@@ -596,11 +615,27 @@ echo "  IP: $SERVER_IP"
 echo "  Price: $PRICE_PER_GB ETH/GB"
 echo "  Bandwidth: $BANDWIDTH Mbps"
 echo ""
-echo -e "${BLUE}Services Running:${NC}"
-echo "  ✓ OpenVPN: Active on UDP 1194"
-echo "  ✓ API Server: Active on TCP 3000"
-echo "  ✓ Fail2ban: Active (SSH/VPN protection)"
-echo "  ✓ UFW Firewall: Active"
+echo -e "${BLUE}Services Status:${NC}"
+if systemctl is-active --quiet openvpn-server@server; then
+    echo "  ✓ OpenVPN: Active on UDP 1194"
+else
+    echo "  ✗ OpenVPN: Not running"
+fi
+if systemctl is-active --quiet horizn-node; then
+    echo "  ✓ API Server: Active on TCP 3000"
+else
+    echo "  ⚠ API Server: Not running (check logs)"
+fi
+if systemctl is-active --quiet fail2ban; then
+    echo "  ✓ Fail2ban: Active (SSH/VPN protection)"
+else
+    echo "  ⚠ Fail2ban: Not running"
+fi
+if ufw status | grep -q "Status: active"; then
+    echo "  ✓ UFW Firewall: Active"
+else
+    echo "  ⚠ UFW Firewall: Not active"
+fi
 echo "  ✓ Auto Updates: Enabled"
 echo ""
 echo -e "${BLUE}Security Configured:${NC}"
