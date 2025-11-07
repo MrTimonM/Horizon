@@ -33,42 +33,42 @@ echo ""
 
 # Confirm or change IP
 echo -n -e "${YELLOW}Is this IP correct? [Y/n]: ${NC}"
-read confirm_ip
+read confirm_ip < /dev/tty
 if [[ $confirm_ip =~ ^[Nn]$ ]]; then
     echo -n -e "${YELLOW}Enter your server IP: ${NC}"
-    read SERVER_IP
+    read SERVER_IP < /dev/tty
 fi
 
 # Get node configuration
 echo ""
 echo -e "${BLUE}[2/8] Node Configuration${NC}"
 echo -n -e "${YELLOW}Enter node name [default: HORIZN-Node]: ${NC}"
-read NODE_NAME
+read NODE_NAME < /dev/tty
 NODE_NAME=${NODE_NAME:-HORIZN-Node}
 
 echo -n -e "${YELLOW}Enter region (e.g., US-East, EU-West, Asia-Pacific): ${NC}"
-read REGION
+read REGION < /dev/tty
 while [ -z "$REGION" ]; do
     echo -e "${RED}Region is required!${NC}"
     echo -n -e "${YELLOW}Enter region: ${NC}"
-    read REGION
+    read REGION < /dev/tty
 done
 
 echo -n -e "${YELLOW}Enter price per GB in ETH [default: 0.001]: ${NC}"
-read PRICE_PER_GB
+read PRICE_PER_GB < /dev/tty
 PRICE_PER_GB=${PRICE_PER_GB:-0.001}
 
 echo -n -e "${YELLOW}Enter advertised bandwidth in Mbps [default: 1000]: ${NC}"
-read BANDWIDTH
+read BANDWIDTH < /dev/tty
 BANDWIDTH=${BANDWIDTH:-1000}
 
 echo -n -e "${YELLOW}Enter your wallet private key (without 0x): ${NC}"
-read -s PRIVATE_KEY
+read -s PRIVATE_KEY < /dev/tty
 echo ""
 while [ -z "$PRIVATE_KEY" ]; do
     echo -e "${RED}Private key is required!${NC}"
     echo -n -e "${YELLOW}Enter your wallet private key: ${NC}"
-    read -s PRIVATE_KEY
+    read -s PRIVATE_KEY < /dev/tty
     echo ""
 done
 
@@ -114,7 +114,8 @@ echo -e "${BLUE}[5/10] Setting up OpenVPN...${NC}"
 mkdir -p /etc/openvpn/server
 cd /etc/openvpn/server
 
-# Initialize Easy-RSA
+# Initialize Easy-RSA (remove if exists)
+rm -rf ~/openvpn-ca
 make-cadir ~/openvpn-ca
 cd ~/openvpn-ca
 
