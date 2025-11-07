@@ -99,8 +99,6 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
     curl \
     wget \
     git \
-    nodejs \
-    npm \
     ufw \
     fail2ban \
     unattended-upgrades > /dev/null 2>&1
@@ -330,12 +328,16 @@ echo ""
 # Setup Node.js API server
 echo -e "${BLUE}[10/10] Setting up API server and blockchain registration...${NC}"
 
-# Check if Node.js is installed
-if ! command -v node &> /dev/null; then
-    echo -e "${YELLOW}Installing Node.js via NodeSource...${NC}"
-    curl -fsSL https://deb.nodesource.com/setup_18.x | bash - > /dev/null 2>&1
-    apt-get install -y nodejs > /dev/null 2>&1
+# Remove old Node.js if present and install latest LTS
+if command -v node &> /dev/null; then
+    CURRENT_VERSION=$(node --version)
+    echo -e "${YELLOW}Found Node.js $CURRENT_VERSION, upgrading to latest LTS...${NC}"
+    apt-get remove -y nodejs npm > /dev/null 2>&1 || true
 fi
+
+echo -e "${YELLOW}Installing Node.js 20.x LTS via NodeSource...${NC}"
+curl -fsSL https://deb.nodesource.com/setup_20.x | bash - > /dev/null 2>&1
+apt-get install -y nodejs > /dev/null 2>&1
 
 echo -e "${GREEN}✓ Node.js $(node --version) installed${NC}"
 
