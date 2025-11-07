@@ -31,34 +31,43 @@ echo -e "${GREEN}✓ Detected IP: $SERVER_IP${NC}"
 echo ""
 
 # Confirm or change IP
-read -p "$(echo -e ${YELLOW}Is this IP correct? [Y/n]: ${NC})" confirm_ip
+echo -n -e "${YELLOW}Is this IP correct? [Y/n]: ${NC}"
+read confirm_ip
 if [[ $confirm_ip =~ ^[Nn]$ ]]; then
-    read -p "$(echo -e ${YELLOW}Enter your server IP: ${NC})" SERVER_IP
+    echo -n -e "${YELLOW}Enter your server IP: ${NC}"
+    read SERVER_IP
 fi
 
 # Get node configuration
 echo ""
 echo -e "${BLUE}[2/8] Node Configuration${NC}"
-read -p "$(echo -e ${YELLOW}Enter node name [default: HORIZN-Node]: ${NC})" NODE_NAME
+echo -n -e "${YELLOW}Enter node name [default: HORIZN-Node]: ${NC}"
+read NODE_NAME
 NODE_NAME=${NODE_NAME:-HORIZN-Node}
 
-read -p "$(echo -e ${YELLOW}Enter region (e.g., US-East, EU-West, Asia-Pacific): ${NC})" REGION
+echo -n -e "${YELLOW}Enter region (e.g., US-East, EU-West, Asia-Pacific): ${NC}"
+read REGION
 while [ -z "$REGION" ]; do
     echo -e "${RED}Region is required!${NC}"
-    read -p "$(echo -e ${YELLOW}Enter region: ${NC})" REGION
+    echo -n -e "${YELLOW}Enter region: ${NC}"
+    read REGION
 done
 
-read -p "$(echo -e ${YELLOW}Enter price per GB in ETH [default: 0.001]: ${NC})" PRICE_PER_GB
+echo -n -e "${YELLOW}Enter price per GB in ETH [default: 0.001]: ${NC}"
+read PRICE_PER_GB
 PRICE_PER_GB=${PRICE_PER_GB:-0.001}
 
-read -p "$(echo -e ${YELLOW}Enter advertised bandwidth in Mbps [default: 1000]: ${NC})" BANDWIDTH
+echo -n -e "${YELLOW}Enter advertised bandwidth in Mbps [default: 1000]: ${NC}"
+read BANDWIDTH
 BANDWIDTH=${BANDWIDTH:-1000}
 
-read -sp "$(echo -e ${YELLOW}Enter your wallet private key (without 0x): ${NC})" PRIVATE_KEY
+echo -n -e "${YELLOW}Enter your wallet private key (without 0x): ${NC}"
+read -s PRIVATE_KEY
 echo ""
-while [ -z "$PRIVATE_KEY" ]; then
+while [ -z "$PRIVATE_KEY" ]; do
     echo -e "${RED}Private key is required!${NC}"
-    read -sp "$(echo -e ${YELLOW}Enter your wallet private key: ${NC})" PRIVATE_KEY
+    echo -n -e "${YELLOW}Enter your wallet private key: ${NC}"
+    read -s PRIVATE_KEY
     echo ""
 done
 
