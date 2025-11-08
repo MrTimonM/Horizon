@@ -225,18 +225,30 @@ echo -e "${YELLOW}  - Building server certificate...${NC}"
 echo -e "${YELLOW}  - Generating TLS key...${NC}"
 
 # Generate TLS-crypt key with error checking
-if ! openvpn --genkey secret /etc/openvpn/server/ta.key; then
-    echo -e "${RED}✗ Failed to generate ta.key with openvpn command${NC}"
-    echo -e "${YELLOW}  - Trying alternative method...${NC}"
-    # Alternative: use openssl to generate random key
-    openssl rand -base64 2048 > /etc/openvpn/server/ta.key
-fi
-
-# Verify ta.key was created
-if [ ! -f "/etc/openvpn/server/ta.key" ]; then
-    echo -e "${RED}✗ Failed to generate ta.key file${NC}"
+if openvpn --genkey secret /etc/openvpn/server/ta.key 2>&1; then
+    echo -e "${GREEN}    ✓ ta.key generated successfully${NC}"
+else
+    echo -e "${RED}✗ Failed to generate ta.key${NC}"
+    echo -e "${YELLOW}  - Checking OpenVPN installation...${NC}"
+    which openvpn
+    openvpn --version | head -1
     exit 1
 fi
+
+# Verify ta.key was created and has correct size
+if [ ! -f "/etc/openvpn/server/ta.key" ]; then
+    echo -e "${RED}✗ ta.key file not found${NC}"
+    exit 1
+fi
+
+TA_KEY_SIZE=$(wc -c < /etc/openvpn/server/ta.key)
+if [ $TA_KEY_SIZE -lt 100 ] || [ $TA_KEY_SIZE -gt 2048 ]; then
+    echo -e "${RED}✗ ta.key file has invalid size: ${TA_KEY_SIZE} bytes${NC}"
+    echo -e "${YELLOW}Expected size: between 100 and 2048 bytes${NC}"
+    exit 1
+fi
+
+echo -e "${GREEN}    ✓ ta.key validated (${TA_KEY_SIZE} bytes)${NC}"
 
 # Set proper permissions on ta.key
 chmod 600 /etc/openvpn/server/ta.key
