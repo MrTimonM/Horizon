@@ -36,10 +36,31 @@ HORIZN is a revolutionary decentralized VPN marketplace that connects users with
 
 ---
 
-## 📚 Documentation
+## � Quick Start with Docker
+
+Get HORIZN running instantly with our pre-built Docker image:
+
+```bash
+docker pull mrtimonm/horizn:latest
+docker run -d -p 3000:3000 mrtimonm/horizn:latest
+```
+
+Then open: **http://localhost:3000**
+
+**Pre-configured with:**
+- ✅ Sepolia testnet contract addresses
+- ✅ Pinata IPFS JWT token
+- ✅ RPC endpoint - Ready to use!
+
+📦 **Docker Hub**: https://hub.docker.com/r/mrtimonm/horizn
+
+---
+
+## �📚 Documentation
 
 Explore our comprehensive documentation:
 
+- **[🐳 Docker Quick Start](README_DOCKER.md)** - One-command deployment
 - **[📖 Complete Project Summary](SUMMARY.md)** - Overview of all deployed components
 - **[🚀 Deployment Guide](DEPLOYMENT.md)** - Complete deployment instructions
 - **[📋 Architecture Overview](ARCHITECTURE.md)** - System architecture and design
