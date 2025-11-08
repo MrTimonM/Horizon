@@ -3,7 +3,13 @@
 #########################################
 # HORIZN VPN Node Deployment Script
 # Network Without Borders
-# Version: 1.0.3 (Updated: Nov 8, 2025)
+# Version: 1.0.4 (Updated: Nov 8, 2025)
+#
+# Changes in v1.0.4:
+# - Fixed MTU mismatch issue causing connection resets
+# - Added tun-mtu 1500 and mssfix 1450 to server config
+# - Added tun-mtu 1500 and mssfix 1450 to client config template
+# - Resolves "Bad encapsulated packet length" errors
 #
 # Changes in v1.0.3:
 # - Updated contract addresses (UserRegistry, NodeRegistry, EscrowPayment)
@@ -297,6 +303,8 @@ push "dhcp-option DNS 8.8.4.4"
 ifconfig-pool-persist /var/log/openvpn/ipp.txt
 keepalive 10 120
 cipher AES-256-CBC
+tun-mtu 1500
+mssfix 1450
 user nobody
 group nogroup
 persist-key
@@ -820,6 +828,8 @@ persist-tun
 remote-cert-tls server
 cipher AES-256-CBC
 auth SHA512
+tun-mtu 1500
+mssfix 1450
 key-direction 1
 verb 3
 
