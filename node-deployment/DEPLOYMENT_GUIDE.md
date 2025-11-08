@@ -398,7 +398,7 @@ NodeRegistry.registerNode(
 )
 ```
 
-### Contract Addresses (Sepolia) - Updated January 2025
+### Contract Addresses (Sepolia) - Updated November 8, 2025
 - **UserRegistry**: `0x387E5b716C5A74dE4Dd1d672FDaAd389D9eD1778`
 - **NodeRegistry**: `0x616D6c01A73Fe40fB7BD7EeAcD20b8df77968244`
 - **EscrowPayment**: `0xd018F55720244C5F6bec33BCc5B7D2354C5f71A3`

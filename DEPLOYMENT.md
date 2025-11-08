@@ -8,7 +8,7 @@
 ✅ **NodeRegistry**: `0x616D6c01A73Fe40fB7BD7EeAcD20b8df77968244`  
 ✅ **EscrowPayment**: `0xd018F55720244C5F6bec33BCc5B7D2354C5f71A3`  
 
-> 📅 **Last Updated**: January 2025 | **Protocol**: TCP Port 443
+> 📅 **Last Updated**: November 8, 2025 | **Protocol**: TCP Port 443
 
 ### Running the Frontend
 

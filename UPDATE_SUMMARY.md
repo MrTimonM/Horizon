@@ -1,6 +1,6 @@
 # HORIZN Update Summary - Contract Redeployment & TCP Migration
 
-## Date: January 2025
+## Date: November 8, 2025
 
 ## Overview
 Complete update of the HORIZN VPN node system with fresh smart contract deployment and migration from UDP to TCP protocol for better compatibility with VPS providers.
@@ -335,4 +335,4 @@ npm start
 
 **Status:** ✅ All updates completed successfully  
 **Version:** HORIZN v1.0.3  
-**Last Updated:** January 2025
+**Last Updated:** November 8, 2025

@@ -141,7 +141,7 @@ The contracts are **already deployed** on Sepolia testnet:
 | **NodeRegistry** | `0x616D6c01A73Fe40fB7BD7EeAcD20b8df77968244` | [View](https://sepolia.etherscan.io/address/0x616D6c01A73Fe40fB7BD7EeAcD20b8df77968244) |
 | **EscrowPayment** | `0xd018F55720244C5F6bec33BCc5B7D2354C5f71A3` | [View](https://sepolia.etherscan.io/address/0xd018F55720244C5F6bec33BCc5B7D2354C5f71A3) |
 
-> 📅 **Last Deployed**: January 2025 | **Protocol**: TCP Port 443  
+> 📅 **Last Deployed**: November 8, 2025 | **Protocol**: TCP Port 443  
 > 📖 **Full details**: [CONTRACT_ADDRESSES.md](CONTRACT_ADDRESSES.md)
 
 <details>

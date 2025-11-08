@@ -1,6 +1,6 @@
 # HORIZN Smart Contract Addresses - Sepolia Testnet
 
-## Current Deployment (January 2025)
+## Current Deployment (November 8, 2025)
 
 ### Contract Addresses:
 
@@ -109,4 +109,4 @@ console.log('Total nodes:', nodeCount.toString());
 
 ---
 
-Last Updated: January 2025
+Last Updated: November 8, 2025

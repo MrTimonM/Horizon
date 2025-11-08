@@ -3,7 +3,7 @@
 #########################################
 # HORIZN VPN Node Deployment Script
 # Network Without Borders
-# Version: 1.0.3 (Updated: Jan 2025)
+# Version: 1.0.3 (Updated: Nov 8, 2025)
 #
 # Changes in v1.0.3:
 # - Updated contract addresses (UserRegistry, NodeRegistry, EscrowPayment)
