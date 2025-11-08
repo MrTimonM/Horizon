@@ -6,13 +6,15 @@
   <p align="center">
     <strong>The first truly decentralized VPN marketplace powered by Ethereum and OpenVPN</strong>
   </p>
+</div>
 
-  <p align="center">
-    [![Ethereum](https://img.shields.io/badge/Ethereum-Sepolia-blue)](https://sepolia.etherscan.io/)
-    [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-    [![Status](https://img.shields.io/badge/status-Active-success)](https://github.com/MrTimonM/Horizon)
-    [![Protocol](https://img.shields.io/badge/VPN-OpenVPN%20TCP%20443-orange)](https://openvpn.net/)
-  </p>
+<div align="center">
+
+[![Ethereum](https://img.shields.io/badge/Ethereum-Sepolia-blue)](https://sepolia.etherscan.io/)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![Status](https://img.shields.io/badge/status-Active-success)](https://github.com/MrTimonM/Horizon)
+[![Protocol](https://img.shields.io/badge/VPN-OpenVPN%20TCP%20443-orange)](https://openvpn.net/)
+
 </div>
 
 ---
