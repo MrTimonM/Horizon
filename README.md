@@ -391,9 +391,6 @@ Handles payments, sessions, and data usage tracking with escrow protection.
 | **Phase 2** | Advanced analytics dashboard | 🔄 In Progress |
 | **Phase 3** | Multi-chain support (Polygon, Arbitrum) | 📅 Planned |
 | **Phase 3** | Bandwidth proof verification | 📅 Planned |
-| **Phase 4** | Governance token (HRZN) | 📅 Planned |
-| **Phase 4** | DAO governance | 📅 Planned |
-| **Phase 5** | Mainnet deployment | 📅 Q2 2025 |
 
 </div>
 
