@@ -223,7 +223,24 @@ echo -e "${YELLOW}  - Generating DH parameters (may take 1-2 minutes)...${NC}"
 echo -e "${YELLOW}  - Building server certificate...${NC}"
 ./easyrsa --batch build-server-full server nopass > /dev/null 2>&1
 echo -e "${YELLOW}  - Generating TLS key...${NC}"
-openvpn --genkey secret /etc/openvpn/server/ta.key 2>/dev/null
+
+# Generate TLS-crypt key with error checking
+if ! openvpn --genkey secret /etc/openvpn/server/ta.key; then
+    echo -e "${RED}✗ Failed to generate ta.key with openvpn command${NC}"
+    echo -e "${YELLOW}  - Trying alternative method...${NC}"
+    # Alternative: use openssl to generate random key
+    openssl rand -base64 2048 > /etc/openvpn/server/ta.key
+fi
+
+# Verify ta.key was created
+if [ ! -f "/etc/openvpn/server/ta.key" ]; then
+    echo -e "${RED}✗ Failed to generate ta.key file${NC}"
+    exit 1
+fi
+
+# Set proper permissions on ta.key
+chmod 600 /etc/openvpn/server/ta.key
+chown root:root /etc/openvpn/server/ta.key
 
 # Copy certificates
 cp pki/ca.crt /etc/openvpn/server/
@@ -413,6 +430,34 @@ echo ""
 
 # Start OpenVPN
 echo -e "${BLUE}Starting OpenVPN service...${NC}"
+
+# Verify all required files exist before starting
+echo -e "${YELLOW}  - Verifying OpenVPN configuration files...${NC}"
+REQUIRED_FILES=(
+    "/etc/openvpn/server/server.conf"
+    "/etc/openvpn/server/ca.crt"
+    "/etc/openvpn/server/server.crt"
+    "/etc/openvpn/server/server.key"
+    "/etc/openvpn/server/dh.pem"
+    "/etc/openvpn/server/ta.key"
+)
+
+MISSING_FILES=0
+for file in "${REQUIRED_FILES[@]}"; do
+    if [ ! -f "$file" ]; then
+        echo -e "${RED}    ✗ Missing: $file${NC}"
+        MISSING_FILES=$((MISSING_FILES + 1))
+    fi
+done
+
+if [ $MISSING_FILES -gt 0 ]; then
+    echo -e "${RED}✗ Missing $MISSING_FILES required file(s)${NC}"
+    echo -e "${YELLOW}Cannot start OpenVPN without all required files${NC}"
+    exit 1
+fi
+
+echo -e "${GREEN}  ✓ All required files present${NC}"
+
 systemctl enable openvpn-server@server > /dev/null 2>&1 || true
 systemctl start openvpn-server@server 2>/dev/null || true
 sleep 3
@@ -422,7 +467,9 @@ if systemctl is-active --quiet openvpn-server@server 2>/dev/null; then
 else
     echo -e "${RED}✗ Failed to start OpenVPN service${NC}"
     echo -e "${YELLOW}Check logs: journalctl -u openvpn-server@server -n 50${NC}"
-    echo -e "${YELLOW}Continuing anyway...${NC}"
+    echo -e "${YELLOW}Showing last 20 log lines:${NC}"
+    journalctl -u openvpn-server@server -n 20 --no-pager
+    exit 1
 fi
 echo ""
 
