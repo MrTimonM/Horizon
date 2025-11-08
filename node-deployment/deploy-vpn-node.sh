@@ -225,21 +225,27 @@ echo -e "${YELLOW}  - Building server certificate...${NC}"
 echo -e "${YELLOW}  - Generating TLS key...${NC}"
 
 # Generate TLS-crypt key with error checking
-# Note: OpenVPN 2.4.x uses --genkey --secret (with space), newer versions use --genkey secret
-# Try both syntaxes for compatibility
-if openvpn --genkey --secret /etc/openvpn/server/ta.key 2>/dev/null; then
-    echo -e "${GREEN}    ✓ ta.key generated successfully (2.4.x syntax)${NC}"
-elif openvpn --genkey secret /etc/openvpn/server/ta.key 2>/dev/null; then
-    echo -e "${GREEN}    ✓ ta.key generated successfully (2.5+ syntax)${NC}"
-else
-    echo -e "${RED}✗ Failed to generate ta.key with both syntaxes${NC}"
-    echo -e "${YELLOW}  - OpenVPN version:${NC}"
-    openvpn --version | head -1
-    echo -e "${YELLOW}  - Trying manual generation...${NC}"
-    # Manual generation using the correct command for the version
-    if openvpn --help 2>&1 | grep -q "genkey.*secret"; then
-        openvpn --genkey --secret /etc/openvpn/server/ta.key 2>&1
+# OpenVPN 2.4.x uses: openvpn --genkey --secret filename
+# OpenVPN 2.5+ uses: openvpn --genkey secret filename
+# Try the 2.4.x syntax first (most common)
+
+if openvpn --genkey --secret /etc/openvpn/server/ta.key 2>&1 | grep -q "Options error"; then
+    # 2.4.x syntax failed, try 2.5+ syntax
+    echo -e "${YELLOW}    Trying OpenVPN 2.5+ syntax...${NC}"
+    if openvpn --genkey secret /etc/openvpn/server/ta.key 2>&1 | grep -q "Options error"; then
+        # Both failed
+        echo -e "${RED}✗ Failed to generate ta.key with both syntaxes${NC}"
+        echo -e "${YELLOW}  - OpenVPN version:${NC}"
+        openvpn --version | head -1
+        exit 1
+    else
+        echo -e "${GREEN}    ✓ ta.key generated (2.5+ syntax)${NC}"
     fi
+elif [ -f "/etc/openvpn/server/ta.key" ]; then
+    echo -e "${GREEN}    ✓ ta.key generated (2.4.x syntax)${NC}"
+else
+    echo -e "${RED}✗ Failed to generate ta.key${NC}"
+    exit 1
 fi
 
 # Verify ta.key was created and has correct size
