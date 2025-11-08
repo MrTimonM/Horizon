@@ -511,18 +511,105 @@ if command -v node &> /dev/null; then
     rm -rf /usr/bin/node /usr/bin/npm /usr/lib/node_modules
 fi
 
-# Install Node.js 20.x LTS
-echo -e "${YELLOW}Installing Node.js 20.x LTS via NodeSource...${NC}"
-curl -fsSL https://deb.nodesource.com/setup_20.x 2>/dev/null | bash - > /dev/null 2>&1 || true
-DEBIAN_FRONTEND=noninteractive apt-get install -y nodejs > /dev/null 2>&1 || true
+# Multiple approaches to install Node.js 20.x LTS
+NODE_INSTALLED=false
 
-if command -v node &> /dev/null; then
-    echo -e "${GREEN}✓ Node.js $(node --version) installed${NC}"
-else
-    echo -e "${RED}✗ Node.js installation failed${NC}"
-    echo -e "${YELLOW}Trying alternative installation...${NC}"
-    apt-get install -y nodejs npm > /dev/null 2>&1 || true
+# Approach 1: NodeSource repository (official)
+echo -e "${YELLOW}[Approach 1/4] Installing Node.js via NodeSource...${NC}"
+if curl -fsSL https://deb.nodesource.com/setup_20.x 2>/dev/null | bash - > /dev/null 2>&1; then
+    DEBIAN_FRONTEND=noninteractive apt-get install -y nodejs > /dev/null 2>&1 || true
+    if command -v node &> /dev/null && command -v npm &> /dev/null; then
+        echo -e "${GREEN}✓ Node.js $(node --version) installed via NodeSource${NC}"
+        NODE_INSTALLED=true
+    fi
 fi
+
+# Approach 2: Using snap (if NodeSource failed)
+if [ "$NODE_INSTALLED" = false ]; then
+    echo -e "${YELLOW}[Approach 2/4] Trying snap installation...${NC}"
+    if command -v snap &> /dev/null; then
+        snap install node --classic --channel=20 > /dev/null 2>&1 || true
+        if command -v node &> /dev/null && command -v npm &> /dev/null; then
+            echo -e "${GREEN}✓ Node.js $(node --version) installed via snap${NC}"
+            NODE_INSTALLED=true
+        fi
+    else
+        echo -e "${YELLOW}  snap not available, skipping...${NC}"
+    fi
+fi
+
+# Approach 3: NVM (Node Version Manager)
+if [ "$NODE_INSTALLED" = false ]; then
+    echo -e "${YELLOW}[Approach 3/4] Trying NVM installation...${NC}"
+    if curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh 2>/dev/null | bash > /dev/null 2>&1; then
+        export NVM_DIR="$HOME/.nvm"
+        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+        nvm install 20 > /dev/null 2>&1 || true
+        nvm use 20 > /dev/null 2>&1 || true
+        nvm alias default 20 > /dev/null 2>&1 || true
+        
+        # Create symlinks for system-wide access
+        ln -sf "$NVM_DIR/versions/node/$(nvm version)/bin/node" /usr/local/bin/node 2>/dev/null || true
+        ln -sf "$NVM_DIR/versions/node/$(nvm version)/bin/npm" /usr/local/bin/npm 2>/dev/null || true
+        
+        if command -v node &> /dev/null && command -v npm &> /dev/null; then
+            echo -e "${GREEN}✓ Node.js $(node --version) installed via NVM${NC}"
+            NODE_INSTALLED=true
+        fi
+    fi
+fi
+
+# Approach 4: Direct binary download (last resort)
+if [ "$NODE_INSTALLED" = false ]; then
+    echo -e "${YELLOW}[Approach 4/4] Trying direct binary download...${NC}"
+    cd /tmp
+    NODE_VERSION="20.10.0"
+    ARCH=$(uname -m)
+    
+    # Detect architecture
+    if [ "$ARCH" = "x86_64" ]; then
+        NODE_ARCH="x64"
+    elif [ "$ARCH" = "aarch64" ]; then
+        NODE_ARCH="arm64"
+    else
+        NODE_ARCH="x64"
+    fi
+    
+    wget -q "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-${NODE_ARCH}.tar.xz" 2>/dev/null || true
+    
+    if [ -f "node-v${NODE_VERSION}-linux-${NODE_ARCH}.tar.xz" ]; then
+        tar -xJf "node-v${NODE_VERSION}-linux-${NODE_ARCH}.tar.xz" -C /usr/local --strip-components=1 2>/dev/null || true
+        rm -f "node-v${NODE_VERSION}-linux-${NODE_ARCH}.tar.xz"
+        
+        if command -v node &> /dev/null && command -v npm &> /dev/null; then
+            echo -e "${GREEN}✓ Node.js $(node --version) installed via binary${NC}"
+            NODE_INSTALLED=true
+        fi
+    fi
+fi
+
+# Final verification
+if [ "$NODE_INSTALLED" = false ]; then
+    echo -e "${RED}✗ All Node.js installation methods failed${NC}"
+    echo -e "${YELLOW}Please install Node.js 20.x manually:${NC}"
+    echo "  curl -fsSL https://deb.nodesource.com/setup_20.x | sudo bash -"
+    echo "  sudo apt-get install -y nodejs"
+    exit 1
+fi
+
+# Verify npm is available
+if ! command -v npm &> /dev/null; then
+    echo -e "${RED}✗ npm not found, trying to install separately...${NC}"
+    apt-get install -y npm > /dev/null 2>&1 || true
+    
+    if ! command -v npm &> /dev/null; then
+        echo -e "${RED}✗ npm installation failed${NC}"
+        exit 1
+    fi
+fi
+
+echo -e "${GREEN}✓ Node.js $(node --version) and npm $(npm --version) ready${NC}"
+echo ""
 
 # Setup application directory
 mkdir -p /opt/horizn-node
