@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # HORIZN Docker Build and Push Script
-# This script builds Docker images and pushes them to Docker Hub
+# Builds and pushes HORIZN frontend to Docker Hub
 
 set -e
 
@@ -12,7 +12,7 @@ echo ""
 
 # Docker Hub username
 DOCKER_USERNAME="mrtimonm"
-VERSION="v1.0.0"
+VERSION="v1.0.1"
 
 # Check if logged in to Docker
 if ! docker info | grep -q "Username"; then
@@ -20,55 +20,42 @@ if ! docker info | grep -q "Username"; then
     docker login
 fi
 
-echo "Building images..."
+echo "Building HORIZN image..."
 echo ""
 
-# Build Frontend
-echo "[1/2] Building Frontend Image..."
+# Build HORIZN Frontend
+echo "Building HORIZN Application..."
 docker build -f Dockerfile.frontend \
-    -t ${DOCKER_USERNAME}/horizn-frontend:latest \
-    -t ${DOCKER_USERNAME}/horizn-frontend:${VERSION} \
+    -t ${DOCKER_USERNAME}/horizn:latest \
+    -t ${DOCKER_USERNAME}/horizn:${VERSION} \
     .
-echo "✓ Frontend image built"
-echo ""
-
-# Build VPN Node (simplified - without server.js copy)
-echo "[2/2] Building VPN Node Image..."
-docker build -f Dockerfile.vpn-node \
-    -t ${DOCKER_USERNAME}/horizn-vpn-node:latest \
-    -t ${DOCKER_USERNAME}/horizn-vpn-node:${VERSION} \
-    .
-echo "✓ VPN Node image built"
+echo "✓ HORIZN image built"
 echo ""
 
 echo "============================================"
-echo "Pushing images to Docker Hub..."
+echo "Pushing image to Docker Hub..."
 echo "============================================"
 echo ""
 
-# Push Frontend
-echo "Pushing Frontend..."
-docker push ${DOCKER_USERNAME}/horizn-frontend:latest
-docker push ${DOCKER_USERNAME}/horizn-frontend:${VERSION}
-echo "✓ Frontend pushed"
-echo ""
-
-# Push VPN Node
-echo "Pushing VPN Node..."
-docker push ${DOCKER_USERNAME}/horizn-vpn-node:latest
-docker push ${DOCKER_USERNAME}/horizn-vpn-node:${VERSION}
-echo "✓ VPN Node pushed"
+# Push HORIZN
+echo "Pushing HORIZN..."
+docker push ${DOCKER_USERNAME}/horizn:latest
+docker push ${DOCKER_USERNAME}/horizn:${VERSION}
+echo "✓ HORIZN pushed"
 echo ""
 
 echo "============================================"
-echo "✓ All images built and pushed successfully!"
+echo "✓ Image built and pushed successfully!"
 echo "============================================"
 echo ""
-echo "Pull commands:"
-echo "  docker pull ${DOCKER_USERNAME}/horizn-frontend:latest"
-echo "  docker pull ${DOCKER_USERNAME}/horizn-vpn-node:latest"
+echo "Pull command:"
+echo "  docker pull ${DOCKER_USERNAME}/horizn:latest"
 echo ""
-echo "Or use docker-compose:"
-echo "  docker-compose pull"
-echo "  docker-compose up -d"
+echo "Run command:"
+echo "  docker run -d -p 3000:3000 ${DOCKER_USERNAME}/horizn:latest"
+echo ""
+echo "Includes pre-configured:"
+echo "  ✓ Contract addresses (Sepolia)"
+echo "  ✓ Pinata JWT token"
+echo "  ✓ RPC endpoint"
 echo ""

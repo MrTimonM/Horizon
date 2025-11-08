@@ -1,7 +1,14 @@
-# Frontend Dockerfile for HORIZN
+# HORIZN - Network Without Borders
 FROM node:20-alpine
 
 WORKDIR /app
+
+# Set default environment variables (deployed contract addresses and JWT)
+ENV NEXT_PUBLIC_NODE_REGISTRY_ADDRESS=0x616D6c01A73Fe40fB7BD7EeAcD20b8df77968244
+ENV NEXT_PUBLIC_ESCROW_PAYMENT_ADDRESS=0xd018F55720244C5F6bec33BCc5B7D2354C5f71A3
+ENV NEXT_PUBLIC_USER_REGISTRY_ADDRESS=0x387E5b716C5A74dE4Dd1d672FDaAd389D9eD1778
+ENV NEXT_PUBLIC_RPC_URL=https://sepolia.infura.io/v3/49581a1c6ce4426d908cd5101b73b99b
+ENV NEXT_PUBLIC_PINATA_JWT=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySW5mb3JtYXRpb24iOnsiaWQiOiIzYzgzYzk3Ni1mOWQ0LTRhMjQtOTdmOS1kOTc4ZTZlYjlkZTQiLCJlbWFpbCI6ImFtYXppbmdtaDg5MUBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwicGluX3BvbGljeSI6eyJyZWdpb25zIjpbeyJkZXNpcmVkUmVwbGljYXRpb25Db3VudCI6MSwiaWQiOiJGUkExIn0seyJkZXNpcmVkUmVwbGljYXRpb25Db3VudCI6MSwiaWQiOiJOWUMxIn1dLCJ2ZXJzaW9uIjoxfSwibWZhX2VuYWJsZWQiOmZhbHNlLCJzdGF0dXMiOiJBQ1RJVkUifSwiYXV0aGVudGljYXRpb25UeXBlIjoic2NvcGVkS2V5Iiwic2NvcGVkS2V5S2V5IjoiMjJiN2ExODZjZjkxOGM5NGVmYjciLCJzY29wZWRLZXlTZWNyZXQiOiJjNzdjYjNhOTlmOTQ1ODdlNzBhMmQzNzExOTUxMzczMjA0ZjQ3MDQyZThiYjM0NWVmOTM0MTIwMDEyMTkyNmQ3IiwiZXhwIjoxNzkzNzc2MDYyfQ.teITE6YqRITS4JgsIHfE7jmrgTanhIG7tQt6-uean0w
 
 # Copy package files
 COPY frontend/package*.json ./
@@ -12,7 +19,7 @@ RUN npm install
 # Copy frontend source
 COPY frontend/ ./
 
-# Build Next.js application
+# Build Next.js application with environment variables
 RUN npm run build
 
 # Expose port
