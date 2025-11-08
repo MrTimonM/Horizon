@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useWalletStore } from '@/store/walletStore';
 import { getNodeRegistryContract, getEscrowPaymentContract, formatEther, parseEther } from '@/utils/contracts';
 import { motion } from 'framer-motion';
-import { FiFilter, FiSearch, FiMapPin, FiDollarSign, FiZap, FiShoppingCart, FiServer } from 'react-icons/fi';
+import { FiFilter, FiSearch, FiMapPin, FiDollarSign, FiZap, FiShoppingCart, FiServer, FiRefreshCw } from 'react-icons/fi';
 import { ethers } from 'ethers';
 
 interface VPNNode {
@@ -30,17 +30,19 @@ export default function MarketplacePage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRegion, setSelectedRegion] = useState('all');
   const [sortBy, setSortBy] = useState('price');
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     loadNodes();
-  }, [provider]);
+  }, []);
 
   const loadNodes = async () => {
     setLoading(true);
     
     try {
-      // Create provider if not exists
-      const ethersProvider = provider || new ethers.JsonRpcProvider(process.env.NEXT_PUBLIC_RPC_URL);
+      // Always use a fresh JSON-RPC provider for reading data
+      // This ensures we don't have stale provider issues when navigating
+      const ethersProvider = new ethers.JsonRpcProvider(process.env.NEXT_PUBLIC_RPC_URL);
       const contract = getNodeRegistryContract(ethersProvider);
       const activeNodes = await contract.getActiveNodes();
       
@@ -55,6 +57,12 @@ export default function MarketplacePage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await loadNodes();
+    setRefreshing(false);
   };
 
   useEffect(() => {
@@ -116,9 +124,17 @@ export default function MarketplacePage() {
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
             VPN <span className="gradient-text">Marketplace</span>
           </h1>
-          <p className="text-xl text-gray-400">
+          <p className="text-xl text-gray-400 mb-6">
             Browse and connect to decentralized VPN nodes worldwide
           </p>
+          <button
+            onClick={handleRefresh}
+            disabled={refreshing}
+            className="inline-flex items-center gap-2 px-6 py-3 bg-brand-500 hover:bg-brand-600 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-colors"
+          >
+            <FiRefreshCw className={refreshing ? 'animate-spin' : ''} />
+            {refreshing ? 'Refreshing...' : 'Refresh Nodes'}
+          </button>
         </motion.div>
 
         {/* Filters */}
@@ -197,12 +213,11 @@ export default function MarketplacePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredNodes.map((node, index) => (
               <motion.div
-                key={node.id}
+                key={node.id.toString()}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
-                className="glass-card hover:bg-white/10 transition-all duration-300 group cursor-pointer"
-                onClick={() => handlePurchase(Number(node.id))}
+                className="glass-card hover:bg-white/10 transition-all duration-300 group"
               >
                 <div className="flex items-start justify-between mb-4">
                   <div>
@@ -248,8 +263,8 @@ export default function MarketplacePage() {
                 </div>
 
                 <button
-                  onClick={(e) => {
-                    e.stopPropagation();
+                  onClick={() => {
+                    console.log('Navigating to purchase page for node ID:', Number(node.id));
                     handlePurchase(Number(node.id));
                   }}
                   className="btn-primary w-full flex items-center justify-center space-x-2"

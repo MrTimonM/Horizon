@@ -393,15 +393,19 @@ NodeRegistry.registerNode(
     region,         // "Asia-Pacific"
     pricePerGB,     // 0.001 ETH (in wei)
     bandwidth,      // 1000 Mbps
-    endpoint,       // "203.0.113.45:1194"
+    endpoint,       // "203.0.113.45:443"
     publicKey       // OpenVPN public key
 )
 ```
 
-### Contract Addresses (Sepolia)
-- **NodeRegistry**: `0x7638b531c3CA30D47912583260982C272c2f66f1`
-- **EscrowPayment**: `0x39877a33BF5B9552689858EB1e23811F7091Bb9a`
-- **UserRegistry**: `0x844a785AA74dAE31dD23Ff70A0F346a8af26D639`
+### Contract Addresses (Sepolia) - Updated January 2025
+- **UserRegistry**: `0x387E5b716C5A74dE4Dd1d672FDaAd389D9eD1778`
+- **NodeRegistry**: `0x616D6c01A73Fe40fB7BD7EeAcD20b8df77968244`
+- **EscrowPayment**: `0xd018F55720244C5F6bec33BCc5B7D2354C5f71A3`
+
+### Protocol Update
+- **OpenVPN Protocol**: TCP (Changed from UDP for better compatibility)
+- **OpenVPN Port**: 443 (Changed from 1194, mimics HTTPS traffic)
 
 ### RPC Endpoint
 - **Infura Sepolia**: `https://sepolia.infura.io/v3/49581a1c6ce4426d908cd5101b73b99b`

@@ -51,20 +51,107 @@ export default function DashboardPage() {
   ];
 
   useEffect(() => {
-    if (!isConnected) {
-      router.push('/');
-      return;
+    // Check connection status
+    if (!isConnected && typeof window !== 'undefined') {
+      // Try to reconnect first
+      const wasConnected = localStorage.getItem('walletConnected');
+      if (!wasConnected) {
+        router.push('/');
+        return;
+      }
     }
-    loadData();
-  }, [address, provider]);
+    
+    if (isConnected && address && provider) {
+      loadData();
+    }
+  }, [isConnected, address, provider]);
 
   const loadData = async () => {
     if (!provider || !address) return;
 
     try {
-      // Load buyer sessions
+      // Load buyer sessions from blockchain
       const escrowContract = getEscrowPaymentContract(provider);
-      setBuyerSessions([mockSession]); // Using mock data for now
+      const userSessions = await escrowContract.getUserSessions(address);
+      
+      console.log('📊 Raw user sessions from blockchain:', userSessions);
+      console.log('📊 Number of sessions:', userSessions.length);
+      
+      // Fetch real data usage from node APIs
+      const sessionsWithUsage = await Promise.all(
+        userSessions.map(async (session: any) => {
+          // Access by index since ethers returns Result arrays
+          const sessionId = Number(session[0]);
+          const nodeId = Number(session[1]);
+          const dataAmountGB = Number(session[5]);
+          const totalCost = session[4];
+          const startTime = Number(session[8]);
+          const expiryTime = Number(session[9]);
+          const active = session[12];
+          
+          console.log('Processing session:', {
+            sessionId,
+            nodeId,
+            dataAmountGB,
+            totalCost: totalCost?.toString(),
+            startTime,
+            expiryTime,
+            active
+          });
+          
+          try {
+            // Get node details
+            const nodeContract = getNodeRegistryContract(provider);
+            const node = await nodeContract.getNode(nodeId);
+            
+            // Check if apiEndpoint exists and extract IP
+            let serverIP = '198.46.189.232'; // Default fallback
+            if (node.apiEndpoint && typeof node.apiEndpoint === 'string' && node.apiEndpoint.includes(':')) {
+              serverIP = node.apiEndpoint.split(':')[0];
+            }
+            
+            // Fetch data usage from node API (port 3000)
+            const usageResponse = await fetch(`http://${serverIP}:3000/session/${sessionId}/usage`);
+            const usageData = await usageResponse.json();
+            
+            const dataUsedBytes = usageData.dataUsedBytes || 0;
+            const dataUsedGB = dataUsedBytes / (1024 ** 3);
+            const remainingDataGB = Math.max(0, dataAmountGB - dataUsedGB);
+            
+            return {
+              id: sessionId,
+              nodeId: nodeId,
+              nodeName: node.region || 'Unknown',
+              totalDataGB: dataAmountGB,
+              usedDataGB: parseFloat(dataUsedGB.toFixed(2)),
+              remainingDataGB: parseFloat(remainingDataGB.toFixed(2)),
+              startDate: startTime > 0 ? startTime * 1000 : Date.now(),
+              expiryDate: expiryTime > 0 ? expiryTime * 1000 : Date.now() + 30 * 24 * 60 * 60 * 1000,
+              totalCost: totalCost ? formatEther(totalCost) : '0',
+              status: active ? 'active' : 'expired',
+              nodeEndpoint: `${serverIP}:443`, // Use the actual endpoint
+            };
+          } catch (error) {
+            console.error(`Error fetching usage for session ${sessionId}:`, error);
+            // Return fallback data
+            return {
+              id: sessionId,
+              nodeId: nodeId,
+              nodeName: 'Node #' + nodeId,
+              totalDataGB: dataAmountGB || 0,
+              usedDataGB: 0,
+              remainingDataGB: dataAmountGB || 0,
+              startDate: startTime > 0 ? startTime * 1000 : Date.now(),
+              expiryDate: expiryTime > 0 ? expiryTime * 1000 : Date.now() + 30 * 24 * 60 * 60 * 1000,
+              totalCost: totalCost ? formatEther(totalCost) : '0',
+              status: active ? 'active' : 'expired',
+              nodeEndpoint: '198.46.189.232:443', // Default endpoint
+            };
+          }
+        })
+      );
+      
+      setBuyerSessions(sessionsWithUsage);
 
       // Load seller nodes
       const nodeContract = getNodeRegistryContract(provider);
@@ -78,7 +165,43 @@ export default function DashboardPage() {
   };
 
   const downloadVPNConfig = async (sessionId: number) => {
-    alert('VPN config download would happen here. Contact the node operator for the config file.');
+    if (!address) return;
+    
+    const session = buyerSessions.find(s => s.id === sessionId);
+    if (!session || !session.nodeEndpoint) {
+      alert('Unable to download config. Node endpoint not available.');
+      return;
+    }
+
+    try {
+      // Extract IP from endpoint (format: "IP:PORT") and use API port 3000
+      const serverIP = session.nodeEndpoint.split(':')[0];
+      const response = await fetch(
+        `http://${serverIP}:3000/session/${sessionId}/download?wallet=${address}`
+      );
+      
+      if (!response.ok) {
+        throw new Error('Failed to download config');
+      }
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `horizn-session-${sessionId}.ovpn`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Download error:', error);
+      alert('Failed to download VPN config');
+    }
+  };
+
+  const refreshUsageData = async () => {
+    setLoading(true);
+    await loadData();
   };
 
   const getUsagePercentage = (used: number, total: number) => {
@@ -112,12 +235,26 @@ export default function DashboardPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
+          className="mb-8 flex justify-between items-center"
         >
-          <h1 className="text-4xl md:text-5xl font-bold mb-2 text-white">
-            Dashboard
-          </h1>
-          <p className="text-gray-400">Monitor your VPN usage and manage nodes</p>
+          <div>
+            <h1 className="text-4xl md:text-5xl font-bold mb-2 text-white">
+              Dashboard
+            </h1>
+            <p className="text-gray-400">Monitor your VPN usage and manage nodes</p>
+          </div>
+          
+          {/* Refresh Button */}
+          {activeTab === 'buyer' && buyerSessions.length > 0 && (
+            <button
+              onClick={refreshUsageData}
+              disabled={loading}
+              className="btn-secondary flex items-center space-x-2"
+            >
+              <FiActivity className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+              <span>Refresh Usage</span>
+            </button>
+          )}
         </motion.div>
 
         {/* Tabs */}
@@ -174,9 +311,9 @@ export default function DashboardPage() {
                       <FiDatabase className="w-5 h-5 text-gray-500" />
                     </div>
                     <div className="text-3xl font-bold text-white mb-1">
-                      {mockSession.totalDataGB} GB
+                      {buyerSessions.reduce((sum, s) => sum + s.totalDataGB, 0)} GB
                     </div>
-                    <div className="text-sm text-gray-500">Original allocation</div>
+                    <div className="text-sm text-gray-500">Across {buyerSessions.length} session{buyerSessions.length !== 1 ? 's' : ''}</div>
                   </motion.div>
 
                   <motion.div
@@ -190,10 +327,13 @@ export default function DashboardPage() {
                       <FiActivity className="w-5 h-5 text-brand-500" />
                     </div>
                     <div className="text-3xl font-bold text-white mb-1">
-                      {mockSession.usedDataGB} GB
+                      {buyerSessions.reduce((sum, s) => sum + s.usedDataGB, 0).toFixed(2)} GB
                     </div>
-                    <div className={`text-sm font-semibold ${getStatusColor(getUsagePercentage(mockSession.usedDataGB, mockSession.totalDataGB))}`}>
-                      {getUsagePercentage(mockSession.usedDataGB, mockSession.totalDataGB)}% consumed
+                    <div className="text-sm text-gray-500">
+                      {getUsagePercentage(
+                        buyerSessions.reduce((sum, s) => sum + s.usedDataGB, 0),
+                        buyerSessions.reduce((sum, s) => sum + s.totalDataGB, 0)
+                      )}% of total
                     </div>
                   </motion.div>
 
@@ -205,58 +345,92 @@ export default function DashboardPage() {
                   >
                     <div className="flex items-center justify-between mb-4">
                       <div className="text-sm text-gray-400">Remaining</div>
-                      <FiTrendingUp className="w-5 h-5 text-brand-500" />
+                      <FiTrendingUp className="w-5 h-5 text-green-500" />
                     </div>
-                    <div className="text-3xl font-bold text-brand-500 mb-1">
-                      {mockSession.remainingDataGB} GB
+                    <div className="text-3xl font-bold text-white mb-1">
+                      {buyerSessions.reduce((sum, s) => sum + s.remainingDataGB, 0).toFixed(2)} GB
                     </div>
-                    <div className="text-sm text-gray-500">
-                      {Math.round((mockSession.remainingDataGB / mockSession.usedDataGB) * 10) / 10}x days at current rate
-                    </div>
+                    <div className="text-sm text-gray-500">Available to use</div>
                   </motion.div>
                 </div>
 
-                {/* Progress Bar */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4 }}
-                  className="glass-card"
-                >
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-bold text-white">Usage Progress</h3>
-                    <span className={`text-sm font-semibold ${getStatusColor(getUsagePercentage(mockSession.usedDataGB, mockSession.totalDataGB))}`}>
-                      {getUsagePercentage(mockSession.usedDataGB, mockSession.totalDataGB)}%
-                    </span>
-                  </div>
-                  <div className="relative h-6 bg-white/5 rounded-full overflow-hidden">
+                {/* Active Sessions List */}
+                <div className="space-y-4">
+                  {buyerSessions.map((session) => (
                     <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${getUsagePercentage(mockSession.usedDataGB, mockSession.totalDataGB)}%` }}
-                      transition={{ duration: 1, ease: 'easeOut' }}
-                      className={`h-full ${getProgressBarColor(getUsagePercentage(mockSession.usedDataGB, mockSession.totalDataGB))} rounded-full relative`}
+                      key={session.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="glass-card"
                     >
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-                    </motion.div>
-                  </div>
-                  <div className="flex justify-between text-sm mt-2">
-                    <span className="text-gray-400">0 GB</span>
-                    <span className="text-white font-semibold">{mockSession.usedDataGB} GB used</span>
-                    <span className="text-gray-400">{mockSession.totalDataGB} GB</span>
-                  </div>
+                      {/* Session Header */}
+                      <div className="flex justify-between items-start mb-6">
+                        <div>
+                          <h3 className="text-xl font-bold text-white mb-2">{session.nodeName}</h3>
+                          <div className="flex items-center space-x-4 text-sm text-gray-400">
+                            <span className="flex items-center">
+                              <FiServer className="w-4 h-4 mr-1" />
+                              Node #{session.nodeId}
+                            </span>
+                            <span className="flex items-center">
+                              <FiClock className="w-4 h-4 mr-1" />
+                              {session.expiryDate && !isNaN(session.expiryDate) 
+                                ? `Expires ${formatDistanceToNow(session.expiryDate, { addSuffix: true })}`
+                                : 'Expiry date unavailable'
+                              }
+                            </span>
+                            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                              session.status === 'active' 
+                                ? 'bg-green-500/20 text-green-400' 
+                                : 'bg-gray-500/20 text-gray-400'
+                            }`}>
+                              {session.status.toUpperCase()}
+                            </span>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => downloadVPNConfig(session.id)}
+                          className="btn-primary flex items-center space-x-2"
+                        >
+                          <FiDownload className="w-4 h-4" />
+                          <span>Download Config</span>
+                        </button>
+                      </div>
 
-                  {getUsagePercentage(mockSession.usedDataGB, mockSession.totalDataGB) >= 80 && (
-                    <div className="mt-4 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20 flex items-start space-x-3">
-                      <FiAlertCircle className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
-                      <div>
-                        <div className="text-sm font-semibold text-yellow-500">Low Data Warning</div>
-                        <div className="text-xs text-gray-400 mt-1">
-                          You've used {getUsagePercentage(mockSession.usedDataGB, mockSession.totalDataGB)}% of your data. Consider purchasing more soon.
+                      {/* Usage Stats */}
+                      <div className="grid md:grid-cols-3 gap-4 mb-6">
+                        <div className="p-4 rounded-lg bg-white/5">
+                          <div className="text-sm text-gray-400 mb-1">Used</div>
+                          <div className="text-2xl font-bold text-white">{session.usedDataGB} GB</div>
+                        </div>
+                        <div className="p-4 rounded-lg bg-white/5">
+                          <div className="text-sm text-gray-400 mb-1">Remaining</div>
+                          <div className="text-2xl font-bold text-green-400">{session.remainingDataGB} GB</div>
+                        </div>
+                        <div className="p-4 rounded-lg bg-white/5">
+                          <div className="text-sm text-gray-400 mb-1">Total Cost</div>
+                          <div className="text-2xl font-bold text-white">{session.totalCost} ETH</div>
                         </div>
                       </div>
-                    </div>
-                  )}
-                </motion.div>
+
+                      {/* Progress Bar */}
+                      <div>
+                        <div className="flex justify-between text-sm mb-2">
+                          <span className="text-gray-400">Data Usage Progress</span>
+                          <span className={`font-semibold ${getStatusColor(getUsagePercentage(session.usedDataGB, session.totalDataGB))}`}>
+                            {getUsagePercentage(session.usedDataGB, session.totalDataGB)}%
+                          </span>
+                        </div>
+                        <div className="h-3 bg-gray-800 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full ${getProgressBarColor(getUsagePercentage(session.usedDataGB, session.totalDataGB))} transition-all duration-500`}
+                            style={{ width: `${getUsagePercentage(session.usedDataGB, session.totalDataGB)}%` }}
+                          />
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
 
                 {/* Usage Chart */}
                 <div className="grid lg:grid-cols-2 gap-6">

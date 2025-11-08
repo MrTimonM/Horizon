@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import ToastContainer from '@/components/ToastContainer';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -27,6 +28,8 @@ export default function RootLayout({
           </main>
           <Footer />
         </div>
+        
+        <ToastContainer />
         
         {/* Background Effects */}
         <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">

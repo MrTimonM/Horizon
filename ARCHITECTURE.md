@@ -2,7 +2,7 @@
 
 ## System Overview
 
-DeVPN is a decentralized VPN network that combines blockchain technology (Ethereum) with WireGuard VPN protocol to create a trustless marketplace for bandwidth sharing.
+DeVPN is a decentralized VPN network that combines blockchain technology (Ethereum) with OpenVPN VPN protocol to create a trustless marketplace for bandwidth sharing.
 
 ## High-Level Architecture
 
@@ -19,7 +19,7 @@ DeVPN is a decentralized VPN network that combines blockchain technology (Ethere
 │   Web Frontend       │                          │   VPN Node (VPS)     │
 │   ═══════════        │                          │   ═══════════        │
 │                      │                          │                      │
-│  • Marketplace UI    │                          │  • WireGuard Server  │
+│  • Marketplace UI    │                          │  • OpenVPN Server  │
 │  • Node Browser      │                          │  • HTTP API          │
 │  • Session Purchase  │                          │  • Usage Tracking    │
 │  • Dashboards        │                          │  • SQLite DB         │
@@ -159,7 +159,7 @@ struct Session {
 │            VPN Node Container (Docker)              │
 │                                                     │
 │  ┌──────────────┐         ┌──────────────────┐     │
-│  │  WireGuard   │         │   HTTP API       │     │
+│  │  OpenVPN   │         │   HTTP API       │     │
 │  │  Interface   │◄────────│   (Node.js)      │     │
 │  │  (wg0)       │         │                  │     │
 │  │              │         │  • /register     │     │
@@ -195,7 +195,7 @@ struct Session {
 
 #### Key Components
 
-**1. WireGuard Server** (`wg-setup.sh`)
+**1. OpenVPN Server** (`wg-setup.sh`)
 - Generates server key pair
 - Configures network interface
 - Sets up routing and NAT
@@ -228,9 +228,9 @@ struct Session {
    ↓
 3. Node Verifies Session with Smart Contract
    ↓
-4. Node Generates WireGuard Client Config
+4. Node Generates OpenVPN Client Config
    ↓
-5. Node Adds Peer to WireGuard Interface
+5. Node Adds Peer to OpenVPN Interface
    ↓
 6. Client Downloads Config & Connects
    ↓
@@ -346,7 +346,7 @@ User                Frontend          Blockchain         VPN Node
  │                     │  { sessionId }   │                 │
  │                     ├────────────────────────────────────►│
  │                     │                  │                 │
- │                     │         WireGuard Config           │
+ │                     │         OpenVPN Config           │
  │                     │◄────────────────────────────────────┤
  │  Download Config    │                  │                 │
  │◄────────────────────┤                  │                 │
@@ -433,7 +433,7 @@ VPN Node           Blockchain          User
 
 4. **Network Security**
    - Firewall rules (51820/UDP, 3000/TCP only)
-   - WireGuard encryption
+   - OpenVPN encryption
    - Regular security updates
 
 ## Performance Considerations

@@ -200,7 +200,7 @@ export default function DocsPage() {
                       </h3>
                       <div className="space-y-3">
                         <a
-                          href="https://sepolia.etherscan.io/address/0x7638b531c3CA30D47912583260982C272c2f66f1"
+                          href="https://sepolia.etherscan.io/address/0x616D6c01A73Fe40fB7BD7EeAcD20b8df77968244"
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex items-center text-blue-400 hover:text-blue-300 transition-colors"
@@ -254,7 +254,7 @@ export default function DocsPage() {
                     {/* NodeRegistry */}
                     <div className="p-6 rounded-xl bg-white/5 border border-white/10">
                       <h3 className="text-xl font-bold mb-2 text-white">NodeRegistry</h3>
-                      <p className="text-sm text-gray-400 mb-3 font-mono">0x7638b531c3CA30D47912583260982C272c2f66f1</p>
+                      <p className="text-sm text-gray-400 mb-3 font-mono">0x616D6c01A73Fe40fB7BD7EeAcD20b8df77968244</p>
                       <p className="text-gray-400 mb-4">
                         Registry for VPN nodes with pricing, bandwidth, and metadata.
                       </p>
@@ -271,7 +271,7 @@ export default function DocsPage() {
                     {/* EscrowPayment */}
                     <div className="p-6 rounded-xl bg-white/5 border border-white/10">
                       <h3 className="text-xl font-bold mb-2 text-white">EscrowPayment</h3>
-                      <p className="text-sm text-gray-400 mb-3 font-mono">0x39877a33BF5B9552689858EB1e23811F7091Bb9a</p>
+                      <p className="text-sm text-gray-400 mb-3 font-mono">0xd018F55720244C5F6bec33BCc5B7D2354C5f71A3</p>
                       <p className="text-gray-400 mb-4">
                         Handles payments, sessions, and data usage tracking with escrow protection.
                       </p>

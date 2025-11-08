@@ -48,6 +48,26 @@ export const useWalletStore = create<WalletState>((set, get) => ({
         chainId,
         isConnected: true,
       });
+
+      // Listen for account changes
+      window.ethereum.on('accountsChanged', (accounts: string[]) => {
+        if (accounts.length === 0) {
+          get().disconnectWallet();
+        } else {
+          // Reconnect with new account
+          get().connectWallet();
+        }
+      });
+
+      // Listen for chain changes
+      window.ethereum.on('chainChanged', () => {
+        window.location.reload();
+      });
+
+      // Persist connection state
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('walletConnected', 'true');
+      }
     } catch (error) {
       console.error('Error connecting wallet:', error);
       throw error;
@@ -63,12 +83,35 @@ export const useWalletStore = create<WalletState>((set, get) => ({
       isConnected: false,
       userProfile: null,
     });
+    
+    // Clear persistence
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('walletConnected');
+    }
   },
 
   setUserProfile: (profile: UserProfile) => {
     set({ userProfile: profile });
   },
 }));
+
+// Auto-reconnect on page load
+if (typeof window !== 'undefined') {
+  window.addEventListener('load', async () => {
+    const wasConnected = localStorage.getItem('walletConnected');
+    if (wasConnected && window.ethereum) {
+      try {
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const accounts = await provider.send('eth_accounts', []);
+        if (accounts.length > 0) {
+          useWalletStore.getState().connectWallet();
+        }
+      } catch (error) {
+        console.error('Auto-reconnect failed:', error);
+      }
+    }
+  });
+}
 
 declare global {
   interface Window {

@@ -29,7 +29,7 @@
 │  3. DOCKER IMAGE BUILD                                      │
 │  🔨 Builds Docker image containing:                         │
 │     - Ubuntu 22.04 base                                     │
-│     - WireGuard VPN server                                  │
+│     - OpenVPN VPN server                                  │
 │     - Node.js API server                                    │
 │     - Blockchain integration                                │
 │     (~2-3 minutes)                                          │
@@ -38,20 +38,20 @@
 ┌─────────────────────────────────────────────────────────────┐
 │  4. CONTAINER STARTUP                                       │
 │  🐳 Docker runs the container:                              │
-│     - Exposes port 51820/UDP (WireGuard)                    │
+│     - Exposes port 51820/UDP (OpenVPN)                    │
 │     - Exposes port 3000/TCP (API)                           │
 │     - Runs docker-entrypoint.sh                             │
 └─────────────────────────────────────────────────────────────┘
                             ↓
 ┌─────────────────────────────────────────────────────────────┐
-│  5. WIREGUARD AUTO-CONFIGURATION                            │
+│  5. OpenVPN AUTO-CONFIGURATION                            │
 │  🔧 wg-setup.sh runs automatically:                         │
 │                                                             │
 │  a) Generates server keys:                                  │
 │     Private Key: [random 256-bit key]                       │
 │     Public Key: aB3dEf...xyz123=                            │
 │                                                             │
-│  b) Creates WireGuard interface (wg0):                      │
+│  b) Creates OpenVPN interface (wg0):                      │
 │     Interface: wg0                                          │
 │     Listen Port: 51820                                      │
 │     IP Address: 10.8.0.1/24                                 │
@@ -102,7 +102,7 @@
 │  ✅ SETUP COMPLETE!                                         │
 │                                                             │
 │  Your node is now:                                          │
-│  - Running WireGuard VPN on 45.67.89.123:51820              │
+│  - Running OpenVPN VPN on 45.67.89.123:51820              │
 │  - Serving API on http://localhost:3000                     │
 │  - Listed on blockchain with ID #1234                       │
 │  - Visible in marketplace                                   │
@@ -114,7 +114,7 @@
 
 ## 🌐 PART 2: What Buyers See in the Browser
 
-### Homepage (http://localhost:3001)
+### Homepage (http://localhost:3000)
 
 ```
 ┌────────────────────────────────────────────────────────┐
@@ -126,13 +126,13 @@
 │  Features:                                             │
 │  ✅ Browse VPN nodes by region                         │
 │  ✅ Pay with crypto (Sepolia ETH)                      │
-│  ✅ Secure WireGuard protocol                          │
+│  ✅ Secure OpenVPN protocol                          │
 │                                                        │
 │  [Browse Marketplace]                                  │
 └────────────────────────────────────────────────────────┘
 ```
 
-### Marketplace Page (http://localhost:3001/marketplace)
+### Marketplace Page (http://localhost:3000/marketplace)
 
 ```
 ┌────────────────────────────────────────────────────────┐
@@ -243,14 +243,14 @@
 │                                                             │
 │     generateClientConfig() does:                            │
 │                                                             │
-│     a) Generates NEW WireGuard keys for buyer:              │
+│     a) Generates NEW OpenVPN keys for buyer:              │
 │        Client Private Key: xY9zA...abc123=                  │
 │        Client Public Key: pQ7rS...def456=                   │
 │                                                             │
 │     b) Assigns unique IP to buyer:                          │
 │        Client IP: 10.8.0.28                                 │
 │                                                             │
-│     c) Adds buyer as WireGuard peer:                        │
+│     c) Adds buyer as OpenVPN peer:                        │
 │        wg set wg0 peer pQ7rS...def456= \                    │
 │          allowed-ips 10.8.0.28/32                           │
 │                                                             │
@@ -283,7 +283,7 @@
 │  │ Session ID: 5678                        │               │
 │  │ Valid Until: Nov 8, 2025 10:30 AM       │               │
 │  │                                         │               │
-│  │ 📄 WireGuard Configuration              │               │
+│  │ 📄 OpenVPN Configuration              │               │
 │  │ [Download devpn-5678.conf]              │               │
 │  │                                         │               │
 │  │ OR scan QR code with mobile app:        │               │
@@ -304,24 +304,24 @@
 ┌─────────────────────────────────────────────────────────────┐
 │  OPTION A: Desktop (Windows/Mac/Linux)                      │
 │                                                             │
-│  1. Install WireGuard app:                                  │
-│     https://www.wireguard.com/install/                      │
+│  1. Install OpenVPN app:                                  │
+│     https://www.OpenVPN.com/install/                      │
 │                                                             │
 │  2. Import the config file:                                 │
-│     WireGuard → Add Tunnel → devpn-5678.conf                │
+│     OpenVPN → Add Tunnel → devpn-5678.conf                │
 │                                                             │
 │  3. Click "Activate"                                        │
 │                                                             │
 │  4. CONNECTED! ✅                                           │
 │     - All traffic now routes through VPN                    │
 │     - IP appears as: 45.67.89.123                           │
-│     - Encrypted WireGuard tunnel                            │
+│     - Encrypted OpenVPN tunnel                            │
 └─────────────────────────────────────────────────────────────┘
                             ↓
 ┌─────────────────────────────────────────────────────────────┐
 │  OPTION B: Mobile (iOS/Android)                             │
 │                                                             │
-│  1. Install WireGuard app from App Store/Play Store         │
+│  1. Install OpenVPN app from App Store/Play Store         │
 │  2. Scan QR code from browser                               │
 │  3. Toggle connection ON                                    │
 │  4. CONNECTED! ✅                                           │
@@ -341,11 +341,11 @@
 │                                                             │
 │  Buyer's Device (10.8.0.28)                                 │
 │         ↓                                                   │
-│  [WireGuard Client encrypts]                                │
+│  [OpenVPN Client encrypts]                                │
 │         ↓                                                   │
 │  Internet → VPS (45.67.89.123:51820)                        │
 │         ↓                                                   │
-│  [VPS WireGuard Server decrypts]                            │
+│  [VPS OpenVPN Server decrypts]                            │
 │         ↓                                                   │
 │  [Routes to destination]                                    │
 │         ↓                                                   │
@@ -359,7 +359,7 @@
 │                                                             │
 │  Cron job runs: "*/1 * * * *"                               │
 │                                                             │
-│  1. Gets WireGuard stats:                                   │
+│  1. Gets OpenVPN stats:                                   │
 │     wg show wg0 dump                                        │
 │                                                             │
 │  2. Finds buyer's peer:                                     │
@@ -448,7 +448,7 @@
 
 ### ✅ What's Automated:
 1. **IP Detection** - Automatically finds your VPS public IP
-2. **VPN Setup** - WireGuard configures itself completely
+2. **VPN Setup** - OpenVPN configures itself completely
 3. **Blockchain Registration** - Node auto-registers on-chain
 4. **Client Key Generation** - Unique keys for each buyer
 5. **Usage Tracking** - Real-time monitoring every minute
@@ -467,7 +467,7 @@
 4. **No Management** - Everything runs automatically
 
 ### 🔒 What Makes It Secure:
-1. **WireGuard** - Military-grade encryption
+1. **OpenVPN** - Military-grade encryption
 2. **Smart Contracts** - Trustless escrow
 3. **Blockchain** - Transparent transactions
 4. **No Trust Needed** - Math and code enforce rules

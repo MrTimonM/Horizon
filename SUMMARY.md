@@ -6,15 +6,17 @@
 All contracts have been deployed and verified:
 
 ```
-UserRegistry:    0x844a785AA74dAE31dD23Ff70A0F346a8af26D639
-NodeRegistry:    0x7638b531c3CA30D47912583260982C272c2f66f1
-EscrowPayment:   0x39877a33BF5B9552689858EB1e23811F7091Bb9a
+UserRegistry:    0x387E5b716C5A74dE4Dd1d672FDaAd389D9eD1778
+NodeRegistry:    0x616D6c01A73Fe40fB7BD7EeAcD20b8df77968244
+EscrowPayment:   0xd018F55720244C5F6bec33BCc5B7D2354C5f71A3
 ```
 
+> 📅 **Deployed**: January 2025 | **Network**: Sepolia Testnet | **Protocol**: TCP Port 443
+
 **View on Etherscan:**
-- https://sepolia.etherscan.io/address/0x844a785AA74dAE31dD23Ff70A0F346a8af26D639
-- https://sepolia.etherscan.io/address/0x7638b531c3CA30D47912583260982C272c2f66f1
-- https://sepolia.etherscan.io/address/0x39877a33BF5B9552689858EB1e23811F7091Bb9a
+- https://sepolia.etherscan.io/address/0x387E5b716C5A74dE4Dd1d672FDaAd389D9eD1778
+- https://sepolia.etherscan.io/address/0x616D6c01A73Fe40fB7BD7EeAcD20b8df77968244
+- https://sepolia.etherscan.io/address/0xd018F55720244C5F6bec33BCc5B7D2354C5f71A3
 
 ### Frontend Application
 Modern, beautiful Next.js application with:

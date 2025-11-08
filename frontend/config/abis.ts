@@ -24,9 +24,12 @@ export const NODE_REGISTRY_ABI = [
 export const ESCROW_PAYMENT_ABI = [
   "function createSession(uint256 nodeId, uint256 maxDataGB, uint256 durationSeconds) external payable returns (uint256)",
   "function claimPayout(uint256 sessionId, uint256 dataUsedBytes) external",
+  "function getSession(uint256 sessionId) external view returns (tuple(uint256 sessionId, uint256 nodeId, address user, address nodeOperator, uint256 depositAmount, uint256 maxDataGB, uint256 durationSeconds, uint256 pricePerGB, uint256 createdAt, uint256 expiresAt, uint256 dataUsedBytes, uint8 status, bool payoutClaimed))",
   "function sessions(uint256) external view returns (uint256 sessionId, uint256 nodeId, address user, address nodeOperator, uint256 depositAmount, uint256 maxDataGB, uint256 durationSeconds, uint256 pricePerGB, uint256 createdAt, uint256 expiresAt, uint256 dataUsedBytes, uint8 status, bool payoutClaimed)",
   "function userSessions(address, uint256) external view returns (uint256)",
   "function operatorSessions(address, uint256) external view returns (uint256)",
+  "function getUserSessions(address user) external view returns (tuple(uint256 sessionId, uint256 nodeId, address user, address nodeOperator, uint256 depositAmount, uint256 maxDataGB, uint256 durationSeconds, uint256 pricePerGB, uint256 createdAt, uint256 expiresAt, uint256 dataUsedBytes, uint8 status, bool payoutClaimed)[])",
+  "function getOperatorSessions(address operator) external view returns (tuple(uint256 sessionId, uint256 nodeId, address user, address nodeOperator, uint256 depositAmount, uint256 maxDataGB, uint256 durationSeconds, uint256 pricePerGB, uint256 createdAt, uint256 expiresAt, uint256 dataUsedBytes, uint8 status, bool payoutClaimed)[])",
   "event SessionCreated(uint256 indexed sessionId, uint256 indexed nodeId, address indexed user, uint256 depositAmount, uint256 maxDataGB, uint256 durationSeconds, uint256 expiresAt)",
   "event SessionCompleted(uint256 indexed sessionId, uint256 dataUsedBytes, uint256 payoutAmount, uint256 refundAmount)",
   "event PayoutClaimed(uint256 indexed sessionId, address indexed operator, uint256 amount)"
