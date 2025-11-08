@@ -7,7 +7,7 @@ import { useState } from 'react';
 export default function BecomeSellerPage() {
   const [copied, setCopied] = useState(false);
 
-  const deployCommand = `curl -sSL https://raw.githubusercontent.com/horizn-vpn/deploy/main/deploy-vpn-node.sh | sudo bash`;
+  const deployCommand = `curl -sSL https://raw.githubusercontent.com/MrTimonM/Horizon/main/node-deployment/deploy-vpn-node.sh | sudo bash`;
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(deployCommand);

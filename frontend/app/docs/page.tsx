@@ -316,7 +316,7 @@ export default function DocsPage() {
                       <div className="relative">
                         <pre className="bg-black/50 rounded-xl p-4 overflow-x-auto border border-white/10">
                           <code className="text-primary-300 font-mono text-sm">
-                            curl -sSL https://raw.githubusercontent.com/horizn-vpn/deploy/main/deploy-vpn-node.sh | sudo bash
+                            curl -sSL https://raw.githubusercontent.com/MrTimonM/Horizon/main/node-deployment/deploy-vpn-node.sh | sudo bash
                           </code>
                         </pre>
                       </div>
