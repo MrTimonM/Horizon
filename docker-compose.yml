@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: horizn-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    networks:
+      - horizn-network
+
+  vpn-node:
+    build:
+      context: .
+      dockerfile: Dockerfile.vpn-node
+    container_name: horizn-vpn-node
+    privileged: true
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    devices:
+      - /dev/net/tun
+    ports:
+      - "443:443"
+      - "3001:3000"
+    environment:
+      - PRIVATE_KEY=${PRIVATE_KEY}
+      - RPC_URL=${RPC_URL:-https://sepolia.infura.io/v3/49581a1c6ce4426d908cd5101b73b99b}
+      - NODE_REGISTRY_ADDRESS=${NODE_REGISTRY_ADDRESS:-0x616D6c01A73Fe40fB7BD7EeAcD20b8df77968244}
+      - ESCROW_PAYMENT_ADDRESS=${ESCROW_PAYMENT_ADDRESS:-0xd018F55720244C5F6bec33BCc5B7D2354C5f71A3}
+      - USER_REGISTRY_ADDRESS=${USER_REGISTRY_ADDRESS:-0x387E5b716C5A74dE4Dd1d672FDaAd389D9eD1778}
+      - SERVER_IP=${SERVER_IP}
+      - NODE_NAME=${NODE_NAME:-HORIZN-Node}
+      - REGION=${REGION:-US-East}
+      - PRICE_PER_GB=${PRICE_PER_GB:-0.001}
+      - BANDWIDTH=${BANDWIDTH:-1000}
+      - PINATA_JWT=${PINATA_JWT}
+    volumes:
+      - openvpn-data:/etc/openvpn
+      - vpn-logs:/var/log/openvpn
+      - node-data:/opt/horizn-node
+    restart: unless-stopped
+    networks:
+      - horizn-network
+
+networks:
+  horizn-network:
+    driver: bridge
+
+volumes:
+  openvpn-data:
+  vpn-logs:
+  node-data:

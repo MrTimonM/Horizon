@@ -1,0 +1,52 @@
+# VPN Node Dockerfile for HORIZN
+FROM ubuntu:22.04
+
+# Prevent interactive prompts
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    wget \
+    git \
+    openvpn \
+    easy-rsa \
+    iptables \
+    iproute2 \
+    net-tools \
+    ufw \
+    fail2ban \
+    sqlite3 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Node.js 20.x
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y nodejs && \
+    rm -rf /var/lib/apt/lists/*
+
+# Create app directory
+WORKDIR /opt/horizn-node
+
+# Copy package.json for Node.js API
+COPY node-deployment/package.json* ./
+
+# Install Node.js dependencies
+RUN npm install
+
+# Copy server.js and deployment script
+COPY node-deployment/server.js ./
+COPY node-deployment/deploy-vpn-node.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/deploy-vpn-node.sh
+
+# Create necessary directories
+RUN mkdir -p /etc/openvpn/server /var/log/openvpn
+
+# Expose ports
+EXPOSE 443 3000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:3000/health || exit 1
+
+# Start script
+CMD ["node", "server.js"]

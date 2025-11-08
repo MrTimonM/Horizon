@@ -1,0 +1,15 @@
+node_modules
+npm-debug.log
+.next
+.git
+.gitignore
+*.md
+.env.local
+.env*.local
+node-deployment/node_modules
+frontend/node_modules
+frontend/.next
+smart-contracts/node_modules
+smart-contracts/artifacts
+smart-contracts/cache
+*.log
