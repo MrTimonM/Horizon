@@ -225,19 +225,26 @@ echo -e "${YELLOW}  - Building server certificate...${NC}"
 echo -e "${YELLOW}  - Generating TLS key...${NC}"
 
 # Generate TLS-crypt key with error checking
-if openvpn --genkey secret /etc/openvpn/server/ta.key 2>&1; then
-    echo -e "${GREEN}    ✓ ta.key generated successfully${NC}"
+# Note: OpenVPN 2.4.x uses --genkey --secret (with space), newer versions use --genkey secret
+# Try both syntaxes for compatibility
+if openvpn --genkey --secret /etc/openvpn/server/ta.key 2>/dev/null; then
+    echo -e "${GREEN}    ✓ ta.key generated successfully (2.4.x syntax)${NC}"
+elif openvpn --genkey secret /etc/openvpn/server/ta.key 2>/dev/null; then
+    echo -e "${GREEN}    ✓ ta.key generated successfully (2.5+ syntax)${NC}"
 else
-    echo -e "${RED}✗ Failed to generate ta.key${NC}"
-    echo -e "${YELLOW}  - Checking OpenVPN installation...${NC}"
-    which openvpn
+    echo -e "${RED}✗ Failed to generate ta.key with both syntaxes${NC}"
+    echo -e "${YELLOW}  - OpenVPN version:${NC}"
     openvpn --version | head -1
-    exit 1
+    echo -e "${YELLOW}  - Trying manual generation...${NC}"
+    # Manual generation using the correct command for the version
+    if openvpn --help 2>&1 | grep -q "genkey.*secret"; then
+        openvpn --genkey --secret /etc/openvpn/server/ta.key 2>&1
+    fi
 fi
 
 # Verify ta.key was created and has correct size
 if [ ! -f "/etc/openvpn/server/ta.key" ]; then
-    echo -e "${RED}✗ ta.key file not found${NC}"
+    echo -e "${RED}✗ ta.key file not found after generation attempts${NC}"
     exit 1
 fi
 
