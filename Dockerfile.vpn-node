@@ -33,13 +33,22 @@ COPY node-deployment/package.json* ./
 # Install Node.js dependencies
 RUN npm install
 
-# Copy server.js and deployment script
-COPY node-deployment/server.js ./
+# Copy deployment script
 COPY node-deployment/deploy-vpn-node.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/deploy-vpn-node.sh
 
 # Create necessary directories
 RUN mkdir -p /etc/openvpn/server /var/log/openvpn
+
+# Create entrypoint script
+RUN echo '#!/bin/bash' > /entrypoint.sh && \
+    echo 'if [ -f "server.js" ]; then' >> /entrypoint.sh && \
+    echo '  exec node server.js' >> /entrypoint.sh && \
+    echo 'else' >> /entrypoint.sh && \
+    echo '  echo "Server.js not found. Run deploy-vpn-node.sh first."' >> /entrypoint.sh && \
+    echo '  exec /bin/bash' >> /entrypoint.sh && \
+    echo 'fi' >> /entrypoint.sh && \
+    chmod +x /entrypoint.sh
 
 # Expose ports
 EXPOSE 443 3000
@@ -49,4 +58,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD curl -f http://localhost:3000/health || exit 1
 
 # Start script
-CMD ["node", "server.js"]
+ENTRYPOINT ["/entrypoint.sh"]

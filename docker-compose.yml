@@ -2,9 +2,11 @@ version: '3.8'
 
 services:
   frontend:
-    build:
-      context: .
-      dockerfile: Dockerfile.frontend
+    image: mrtimonm/horizn-frontend:latest
+    # Uncomment below to build locally instead:
+    # build:
+    #   context: .
+    #   dockerfile: Dockerfile.frontend
     container_name: horizn-frontend
     ports:
       - "3000:3000"
@@ -15,9 +17,11 @@ services:
       - horizn-network
 
   vpn-node:
-    build:
-      context: .
-      dockerfile: Dockerfile.vpn-node
+    image: mrtimonm/horizn-vpn-node:latest
+    # Uncomment below to build locally instead:
+    # build:
+    #   context: .
+    #   dockerfile: Dockerfile.vpn-node
     container_name: horizn-vpn-node
     privileged: true
     cap_add:
